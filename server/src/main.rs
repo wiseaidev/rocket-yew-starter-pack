@@ -1,18 +1,13 @@
-// #![feature(plugin)]
-// #![allow(unused_variables)]
-// #![allow(unused_mut)]
-// #![allow(unused_imports)]
-// #![allow(unused_must_use)]
-// #![allow(dead_code)]
-// #![feature(proc_macro_hygiene, decl_macro)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
+#![allow(dead_code)]
 
 #[macro_use]
 extern crate rocket;
 
 use bincode::{deserialize, serialize};
-use maud::{html, Markup};
-use maud::{PreEscaped, DOCTYPE};
-use rocket::fairing::AdHoc;
+use maud::html;
+use maud::DOCTYPE;
 use rocket::fs::{relative, NamedFile};
 use rocket::http::ContentType;
 use rocket::response::content::RawHtml;
@@ -20,11 +15,11 @@ use rocket::response::status;
 use rocket::serde::json::Json;
 use rocket::State;
 use serde::{Deserialize, Serialize};
+use sled::Db;
 use sled::Mode::LowSpace;
 use sled::{Config, Tree};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use sled::Db;
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
@@ -34,20 +29,15 @@ async fn main() -> Result<(), rocket::Error> {
         .mode(LowSpace)
         .cache_capacity(1_000_000)
         .flush_every_ms(Some(1000));
-    let tree = config.open().unwrap();
-    //let tree = Tree::start(conf).unwrap();
+    let tree: Tree = config.open().unwrap().open_tree("tree").unwrap();
     let db_arc = Arc::new(tree);
     let routes = all_routes();
     let rocket = rocket::build()
         .mount("/", routes)
-        .attach(AdHoc::on_ignite("Manage State", |rocket| async move {
-            rocket.manage(db_arc)
-        }))
-        .ignite()
-        .await?;
-        // .launch()
-        // .await?
-    // assert_eq!(rocket.state::<Arc<Db>>().unwrap(), &db_arc);
+        .manage(db_arc)
+        .launch()
+        .await
+        .expect("Launch Error");
     Ok(())
 }
 
@@ -91,7 +81,7 @@ async fn index(db: &State<Arc<sled::Tree>>) -> RawHtml<String> {
 /// Serve static assets from the "static" folder.
 #[get("/static/<path..>")]
 async fn static_file(path: PathBuf) -> Option<NamedFile> {
-    let mut path = Path::new(relative!("static")).join(path);
+    let path = Path::new(relative!("static")).join(path);
     // if path.is_dir() {
     //     path.push("index.html");
     // }
@@ -124,7 +114,7 @@ fn create_task(db: &State<Arc<sled::Tree>>, task: Json<Task>) -> status::Accepte
 
     // Our task is the first field (e.g., "0") on Json<Task> Rocket passes us.
     let encoded: Vec<u8> = serialize(&task.0).unwrap();
-    db.insert(new_key, encoded);
+    let _ = db.insert(new_key, encoded);
     status::Accepted(Some(format!("success")))
 }
 
@@ -170,7 +160,7 @@ fn update_all_tasks(
     for (i, ref v) in tasks.0.into_iter().enumerate() {
         let encoded: Vec<u8> = serialize(v).unwrap();
         let key = vec![i as u8];
-        db.insert(key, encoded);
+        let _ = db.insert(key, encoded);
     }
 
     status::Accepted(Some(format!("success")))
@@ -199,71 +189,73 @@ fn update_task(db: &State<Arc<sled::Tree>>, id: u8, task: Json<Task>) -> status:
     status::Accepted(Some(format!("format")))
 }
 
-// /// Create an instance of Rocket suitable for tests.
-// fn test_instance(db_path: PathBuf) -> rocket::Rocket {
-//     let conf = sled::ConfigBuilder::new()
-//         .path(String::from(db_path.to_str().unwrap()))
-//         .build();
-//     let tree = Tree::start(conf).unwrap();
-//     let db_arc = Arc::new(tree);
-//     rocket::ignite().mount("/", all_routes()).manage(db_arc)
-// }
+/// Create an instance of Rocket suitable for tests.
+fn _test_instance(db_path: PathBuf) -> rocket::Rocket<rocket::Build> {
+    let config = Config::new()
+        .path(String::from(db_path.to_str().unwrap()))
+        .mode(LowSpace)
+        .cache_capacity(1_000_000)
+        .flush_every_ms(Some(1000));
+    let tree: Tree = config.open().unwrap().open_tree("tree").unwrap();
+    let db_arc = Arc::new(tree);
+    rocket::build().mount("/", all_routes()).manage(db_arc)
+}
 
-// #[test]
-// fn test_post_get() {
-//     use rocket::http::{ContentType, Status};
-//     use rocket::local::Client;
-//     use tempdir::TempDir;
+#[test]
+fn test_post_get() {
+    use rocket::http::{ContentType, Status};
+    use rocket::local::blocking::Client;
+    use tempdir::TempDir;
 
-//     let dir = TempDir::new("rocket").unwrap();
-//     let path = dir.path().join("test_data.db");
+    let dir = TempDir::new("rocket").unwrap();
+    let path = dir.path().join("test_data.db");
 
-//     // create our test client
-//     let c = Client::new(test_instance(path)).unwrap();
+    // create our test client
+    let c = Client::tracked(_test_instance(path)).expect("valid rocket");
 
-//     // create a new task with raw json string body
-//     let req = c
-//         .post("/task")
-//         .body(r#"{"completed": false, "description": "foo", "editing": false}"#)
-//         .header(ContentType::JSON);
-//     let resp = req.dispatch();
-//     assert_eq!(resp.status(), Status::Accepted);
+    // create a new task with raw json string body
+    let req = c
+        .post("/task")
+        .body(r#"{"completed": false, "description": "foo", "editing": false}"#)
+        .header(ContentType::JSON);
+    let resp = req.dispatch();
+    assert_eq!(resp.status(), Status::Accepted);
 
-//     let req = c.get("/task/0");
-//     let bod = req.dispatch().body_bytes().unwrap();
-//     let decoded: Task = serde_json::from_slice(&bod[..])
-//         .expect("not a valid task; if your model has changed, try deleting your database file");
-//     assert_eq!(&decoded.description, "foo");
+    let req = c.get("/task/0");
+    let bod = req.dispatch().into_bytes().unwrap();
+    let decoded: Task = serde_json::from_slice(&bod[..])
+        .expect("not a valid task; if your model has changed, try deleting your database file");
+    assert_eq!(&decoded.description, "foo");
 
-//     // create another Task and let serde_json handle serialization
-//     let task = Task {
-//         description: String::from("baz"),
-//         completed: true,
-//         editing: false,
-//     };
-//     let req = c
-//         .post("/task")
-//         .body(serde_json::to_vec(&task).unwrap())
-//         .header(ContentType::JSON);
-//     let resp = req.dispatch();
-//     assert_eq!(resp.status(), Status::Accepted);
+    // create another Task and let serde_json handle serialization
+    let task = Task {
+        description: String::from("baz"),
+        completed: true,
+        editing: false,
+    };
+    let req = c
+        .post("/task")
+        .body(serde_json::to_vec(&task).unwrap())
+        .header(ContentType::JSON);
+    let resp = req.dispatch();
+    assert_eq!(resp.status(), Status::Accepted);
 
-//     // we expect our next task to have id 1
-//     let req = c.get("/task/1");
-//     let bod = req.dispatch().body_bytes().unwrap();
-//     let decoded: Task = serde_json::from_slice(&bod[..]).expect("not a valid task");
-//     assert_eq!(decoded.description, "baz");
-//     assert_eq!(decoded.completed, true);
+    // we expect our next task to have id 1
+    let req = c.get("/task/1");
+    let bod = req.dispatch().into_bytes().unwrap();
+    let decoded: Task = serde_json::from_slice(&bod[..]).expect("not a valid task");
+    assert_eq!(decoded.description, "baz");
+    assert_eq!(decoded.completed, true);
 
-//     // now fetch both tasks from /tasks
-//     let req = c.get("/tasks");
-//     let bod = req.dispatch().body_bytes().unwrap();
-//     let tasks: Vec<Task> = serde_json::from_slice(&bod[..]).expect("not an array of Task");
-//     assert_eq!(tasks.len(), 2);
+    // now fetch both tasks from /tasks
+    let req = c.get("/tasks");
+    let bod = req.dispatch().into_bytes().unwrap();
+    let tasks: Vec<Task> = serde_json::from_slice(&bod[..]).expect("not an array of Task");
+    assert_eq!(tasks.len(), 2);
 
-//     // Test that they come back in the order we expect, with the data we expect.
-//     let foo_task = tasks.get(0).unwrap();
-//     let baz_task = tasks.get(1).unwrap();
-//     assert_eq!(foo_task.description, "foo");
-//     assert_eq!(baz_task.description, "baz");
-// }
+    // Test that they come back in the order we expect, with the data we expect.
+    let foo_task = tasks.get(0).unwrap();
+    let baz_task = tasks.get(1).unwrap();
+    assert_eq!(foo_task.description, "foo");
+    assert_eq!(baz_task.description, "baz");
+}
