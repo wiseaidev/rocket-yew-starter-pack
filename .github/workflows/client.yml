@@ -1,4 +1,4 @@
-name: server
+name: client
 
 on:
   workflow_dispatch:
@@ -23,7 +23,11 @@ jobs:
         target: wasm32-unknown-unknown
         override: true
         profile: minimal
+    - name: Install trunk
+      uses: jetli/trunk-action@v0.1.0
+      with:
+        version: 'latest'
     - name: Build
-      run: cd server && cargo build --verbose
+      run: cd ui && trunk build
     - name: Run tests
-      run: cd server && cargo test --verbose
+      run: cd ui && cargo test --verbose
