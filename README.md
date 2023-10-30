@@ -1,69 +1,100 @@
-Note: this repository is archived. I sketched it out at the time because nothing like it existed and I wanted to scratch an itch. 
-But now Yew has come a really long way, and keeping up with all the changes + maintaining a backend, however minimal, is just not 
-something that interests me anymore. It's irresponsible for me to have this be a "most stars" hit when people search for Yew, when 
-it will usually be busted and out of date. Better stuff exists. [Start with the official docs](https://yew.rs/docs/en/intro/)
+# 🚀 Full Stack Yew and Rocket Template
 
-It can still serve as an example for what I'd consider to be a basic repo layout, but you'll have to rewrite most of the 
-internals.
+![Demo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/nx4ttbcx91r0oi2tzc70.gif)
 
-The front-end rust web development space is still evolving, but has already benefitted from the (frankly incredible) work of
-so many trailblazers.
+This full-stack template combines the power of [Yew](https://yew.rs/) on the frontend and [Rocket](https://rocket.rs/) on the backend to help you kickstart your web application development. It provides a solid foundation for building real-time, interactive, and responsive web applications.
 
-The next version of this repo needs to be written by someone new, scratching their own itch. Go do radical shit.
+## Features
 
-Love, Coleman
+- **Rust All The Way**: Write your web application entirely in Rust, ensuring type safety and performance.
+- **Yew Frontend**: A modern, Rust-based frontend framework for building interactive web applications.
+- **Rocket Backend**: A web framework for Rust with great flexibility and speed.
+- **CRUD Operations**: Set up Create, Read, Update, and Delete operations easily (TODO: Delete).
 
----
+## Prerequisites
 
-# Rocket/Yew Starter Pack
+Before you begin, ensure you have met the following requirements:
 
-[Rocket](https://rocket.rs) is a framework for building web servers in Rust, 
-with a routing API that feels like Flask (Python). [Yew](https://github.com/DenisKolodin/yew) 
-is a front end framework for writing apps in Rust using cutting-edge 
-(but well-supported) WebAssembly technologies, and with an API inspired by 
-patterns from Elm and React.
+- **Rust**: Make sure you have Rust and Cargo installed. If not, visit [rust-lang.org/learn/get-started](https://www.rust-lang.org/learn/get-started) for installation instructions.
 
-This project adapts the [todoMVC example from the yew repo](https://github.com/DenisKolodin/yew/tree/master/examples/todomvc), 
-and periodically syncs local state with a backend Rocket server.
+- **Trunk**: This project uses Trunk for building the Yew frontend. You can install Trunk with Cargo by running:
 
-We also include some scripts to demonstrate building the ui and shipping it over
-to the server to serve as static assets.
+    ```bash
+    cargo install --locked trunk
+    ```
+
+    For more information about Trunk, visit [thedodd/trunk](https://github.com/thedodd/trunk).
+
+- **wasm32-unknown-unknown Target**: To build WebAssembly files, you need to add the `wasm32-unknown-unknown` target to your Rust toolchain. You can add it by running:
+
+    ```bash
+    rustup target add wasm32-unknown-unknown
+    ```
+
+    This target is essential for compiling Rust code to WebAssembly.
 
 ## Getting Started
 
-Install rust with `rustup`. Since we build with `--target=wasm32-unknown-unknown`, and rely on 
-other [unstable features](https://doc.rust-lang.org/beta/unstable-book/the-unstable-book.html), you must use nightly rust.
+Follow these steps to get your project up and running:
 
-```
-rustup default nightly
-```
+1. **Use this template**: Click on the green "Use this template" Button.
 
-Build both `ui` and `server` on your current platform
+1. **Clone the Repository**: Clone this repository to your local machine or click on .
 
-```
-./build.sh
-```
+    ```bash
+    git clone https://github.com/your-username/rocket-yew-starter-pack.git
+    cd rocket-yew-starter-pack
+    ```
 
-Or, build `ui` and copy the outputs over to `server` to run locally. 
+1. **Install Dependencies**: Use `cargo` to install the required dependencies for both the frontend and the backend.
 
-```
-./run-local.sh
-```
+    ```bash
+    # Install frontend dependencies
+    cd ui
+    trunk build
 
-Or, build the Rocket server backend as a static binary, using Eric Kidd's 
-Docker container. 
+    # Install backend dependencies
+    cd ../server
+    cargo build
+    ```
 
-```
-./static-binary.sh  # calls server/.container-script.sh
-```
+1. **Run the Application**: Start the backend server and the frontend development server.
 
-## Other Libraries
+    ```bash
+    # Start the backend
+    cargo run
 
-This project also uses:
+    # Start the frontend development server
+    cd ui
+    trunk serve
+    ```
 
-* [stdweb](https://github.com/koute/stdweb) and [cargo-web](https://github.com/koute/cargo-web) - core library and 
-   tooling that make frameworks like yew possible. You can support koute on Patreon.
-* [maud](https://github.com/lfairy/maud) - html templating 
-* [sled](https://github.com/spacejam/sled) - an embedded, ordered key-value store 
-* [bincode](https://github.com/TyOverby/bincode) - binary encoding for rust types, so we can put
-   stuff in a sled tree
+1. **Access the Application**: Open your web browser and go to `http://localhost:8080` to access the application.
+
+## Project Structure
+
+The project follows a structured layout:
+
+- `ui/`: Contains the Yew frontend code.
+- `server/`: Contains the Rocket backend code.
+
+## Usage
+
+Here are some common tasks you can perform with this template:
+
+- **Add API Routes**: Define your API routes in `src/main.rs`.
+- **Modify Frontend**: Customize the frontend by editing the files in `ui/src/`.
+
+## Contribution
+
+Contributions are welcome! Feel free to submit issues, feature requests, or pull requests to improve this template.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Yew and Rocket communities for their amazing libraries and documentation.
+
+Happy coding! 🚀🦀
