@@ -12,8 +12,8 @@ struct Item {
     editing: bool,
 }
 
-#[function_component(AddItem)]
-fn add_item() -> Html {
+#[function_component(CrudItems)]
+fn crud_item() -> Html {
     let input_description_ref = use_node_ref();
     let input_description_handle = use_state(String::default);
     let input_description = (*input_description_handle).clone();
@@ -154,6 +154,29 @@ fn add_item() -> Html {
         });
     });
 
+    let on_delete_item = Callback::from(move |id: u64| {
+        // Use the 'id' parameter to identify the item being deleted
+        let item_id = id;
+        spawn_local(async move {
+            // Send a Delete request to update the item's completed status
+            match Request::delete(&format!("http://127.0.0.1:8000/task/{}", item_id))
+                .header("Content-Type", "application/json")
+                .send()
+                .await
+            {
+                Ok(response) => {
+                    if response.status() == 200 {
+                    } else {
+                    }
+                }
+                Err(error) => {
+                    // Handle the error here
+                    println!("Network request error: {:?}", error);
+                }
+            }
+        });
+    });
+
     html! {
         <div class="container">
             <div class="split-screen">
@@ -161,7 +184,7 @@ fn add_item() -> Html {
                     <h2>{"Items Created"}</h2>
                     <button onclick={on_fetch_items}>{"Refresh Items"}</button>
                     <ul>
-                        { for items.iter().enumerate().map(|(index, item)| render_item(index.try_into().unwrap(), item, on_update_item.clone())) }
+                        { for items.iter().enumerate().map(|(index, item)| render_item(index.try_into().unwrap(), item, on_update_item.clone(), on_delete_item.clone())) }
                     </ul>
                 </div>
                 <form class="form-container" onsubmit={on_submit}>
@@ -197,7 +220,12 @@ fn add_item() -> Html {
     }
 }
 
-fn render_item(index: u64, item: &Item, on_update_item: Callback<u64>) -> Html {
+fn render_item(
+    index: u64,
+    item: &Item,
+    on_update_item: Callback<u64>,
+    on_delete_item: Callback<u64>,
+) -> Html {
     html! {
         <li class={if item.completed { "completed" } else { "" }}>
             <span>
@@ -213,11 +241,12 @@ fn render_item(index: u64, item: &Item, on_update_item: Callback<u64>) -> Html {
                 onclick={Callback::from(move |event: MouseEvent| {
             event.prevent_default(); on_update_item.emit(index)})}
             />
-            <button>{"Delete"}</button>
+            <button onclick={Callback::from(move |event: MouseEvent| {
+            event.prevent_default(); on_delete_item.emit(index)})}>{"Delete"}</button>
         </li>
     }
 }
 
 fn main() {
-    yew::Renderer::<AddItem>::new().render();
+    yew::Renderer::<CrudItems>::new().render();
 }

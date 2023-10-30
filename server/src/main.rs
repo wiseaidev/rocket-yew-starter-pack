@@ -16,10 +16,16 @@ use std::sync::Arc;
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     let allowed_origins = AllowedOrigins::all();
-    let allowed_methods = vec![Method::Get, Method::Post, Method::Options, Method::Put]
-        .into_iter()
-        .map(From::from)
-        .collect();
+    let allowed_methods = vec![
+        Method::Get,
+        Method::Post,
+        Method::Options,
+        Method::Put,
+        Method::Delete,
+    ]
+    .into_iter()
+    .map(From::from)
+    .collect();
     let cors = rocket_cors::CorsOptions {
         allowed_origins,
         allowed_methods: allowed_methods,
@@ -53,7 +59,8 @@ fn all_routes() -> Vec<rocket::Route> {
         get_task,
         get_tasks,
         update_all_tasks,
-        update_task
+        update_task,
+        delete_task
     ]
 }
 
@@ -66,7 +73,7 @@ struct Task {
 
 /// Create a new task. The database id will be automatically assigned.
 #[post("/task", format = "json", data = "<task>")]
-async fn create_task(db: &State<Arc<sled::Tree>>, task: Json<Task>) -> status::Accepted<String> {
+async fn create_task(db: &State<Arc<Tree>>, task: Json<Task>) -> status::Accepted<String> {
     println!("got a task {:?}", task);
 
     // scan through our DB to get create an incremented ID.
@@ -88,7 +95,7 @@ async fn create_task(db: &State<Arc<sled::Tree>>, task: Json<Task>) -> status::A
 
 /// Return all tasks or an empty Vec, which is valid.
 #[get("/tasks")]
-fn get_tasks(db: &State<Arc<sled::Tree>>) -> Json<Vec<Task>> {
+fn get_tasks(db: &State<Arc<Tree>>) -> Json<Vec<Task>> {
     let mut results: Vec<Task> = Vec::new();
 
     for item in db.iter() {
@@ -106,10 +113,7 @@ fn get_tasks(db: &State<Arc<sled::Tree>>) -> Json<Vec<Task>> {
 
 /// Update all tasks with a Vec<Task>.
 #[post("/tasks", format = "application/json", data = "<tasks>")]
-fn update_all_tasks(
-    db: &State<Arc<sled::Tree>>,
-    tasks: Json<Vec<Task>>,
-) -> status::Accepted<String> {
+fn update_all_tasks(db: &State<Arc<Tree>>, tasks: Json<Vec<Task>>) -> status::Accepted<String> {
     // get len
     let mut count = 0;
     for item in db.iter() {
@@ -136,7 +140,7 @@ fn update_all_tasks(
 
 /// Get a task by id.
 #[get("/task/<id>")]
-fn get_task(db: &State<Arc<sled::Tree>>, id: u8) -> Option<Json<Task>> {
+fn get_task(db: &State<Arc<Tree>>, id: u8) -> Option<Json<Task>> {
     let val = db.get(&vec![id]);
     match val {
         Ok(Some(db_vec)) => {
@@ -149,12 +153,21 @@ fn get_task(db: &State<Arc<sled::Tree>>, id: u8) -> Option<Json<Task>> {
 
 /// Update a task by id.
 #[put("/task/<id>", format = "application/json", data = "<task>")]
-fn update_task(db: &State<Arc<sled::Tree>>, id: u8, task: Json<Task>) -> status::Accepted<String> {
+fn update_task(db: &State<Arc<Tree>>, id: u8, task: Json<Task>) -> status::Accepted<String> {
     let key = vec![id];
     let encoded: Vec<u8> = serialize(&task.0).unwrap();
     let _ = db.insert(key, encoded);
 
-    status::Accepted(Some(format!("format")))
+    status::Accepted(Some(format!("Task was updated successfully!")))
+}
+
+/// Update a task by id.
+#[delete("/task/<id>")]
+fn delete_task(db: &State<Arc<Tree>>, id: u8) -> status::Accepted<String> {
+    let key = vec![id];
+    let _ = db.remove(key);
+
+    status::Accepted(Some(format!("Task was deleted successfully!")))
 }
 
 /// Create an instance of Rocket suitable for tests.
