@@ -1,5 +1,9 @@
 # 🚀 Full Stack Yew and Rocket Template
 
+[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](LICENSE)
+[![Server Build Status](https://github.com/wiseaidev/rocket-yew-starter-pack/workflows/server/badge.svg)](https://github.com/wiseaidev/rocket-rs/actions)
+[![Client Build Status](https://github.com/wiseaidev/rocket-yew-starter-pack/workflows/client/badge.svg)](https://github.com/wiseaidev/rocket-rs/actions)
+
 ![Demo](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/nx4ttbcx91r0oi2tzc70.gif)
 
 This full-stack template combines the power of [Yew](https://yew.rs/) on the frontend and [Rocket](https://rocket.rs/) on the backend to help you kickstart your web application development. It provides a solid foundation for building real-time, interactive, and responsive web applications.
