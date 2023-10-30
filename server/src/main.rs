@@ -2,21 +2,24 @@
 extern crate rocket;
 
 use bincode::{deserialize, serialize};
+use rocket::http::Method;
 use rocket::response::status;
 use rocket::serde::json::Json;
 use rocket::State;
+use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use serde::{Deserialize, Serialize};
 use sled::Mode::LowSpace;
 use sled::{Config, Tree};
-use std::sync::Arc;
-use rocket_cors::{AllowedHeaders, AllowedOrigins};
-use rocket::http::Method;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
     let allowed_origins = AllowedOrigins::all();
-    let allowed_methods = vec![Method::Get, Method::Post, Method::Options, Method::Put].into_iter().map(From::from).collect();
+    let allowed_methods = vec![Method::Get, Method::Post, Method::Options, Method::Put]
+        .into_iter()
+        .map(From::from)
+        .collect();
     let cors = rocket_cors::CorsOptions {
         allowed_origins,
         allowed_methods: allowed_methods,

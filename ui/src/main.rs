@@ -89,7 +89,11 @@ fn add_item() -> Html {
     };
 
     let items = use_state(|| vec![]);
-    let updated_item = use_state(|| Item { completed: false, description: "".to_string(), editing: false });
+    let updated_item = use_state(|| Item {
+        completed: false,
+        description: "".to_string(),
+        editing: false,
+    });
 
     let on_fetch_items = {
         let items = items.clone();
@@ -113,17 +117,22 @@ fn add_item() -> Html {
         let item_id = id;
         let updated_item = updated_item.clone();
         spawn_local(async move {
-            let item: Item = Request::get(&format!("http://127.0.0.1:8000/task/{}", item_id.clone()))
-                .send()
-                .await
-                .unwrap()
-                .json()
-                .await
-                .unwrap();
-            updated_item.set(Item { completed: !item.completed, description: item.description, editing: item.editing });
+            let item: Item =
+                Request::get(&format!("http://127.0.0.1:8000/task/{}", item_id.clone()))
+                    .send()
+                    .await
+                    .unwrap()
+                    .json()
+                    .await
+                    .unwrap();
+            updated_item.set(Item {
+                completed: !item.completed,
+                description: item.description,
+                editing: item.editing,
+            });
             let json_string = serde_json::to_string(&*updated_item)
                 .expect("Error while serializing JsValue to a string");
-            
+
             // Send a PUT request to update the item's completed status
             match Request::put(&format!("http://127.0.0.1:8000/task/{}", item_id))
                 .header("Content-Type", "application/json")
