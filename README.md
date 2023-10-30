@@ -43,7 +43,7 @@ Follow these steps to get your project up and running:
 
 1. **Use this template**: Click on the green "Use this template" Button.
 
-1. **Clone the Repository**: Clone this repository to your local machine or click on .
+1. **Clone the Repository**: Clone this repository to your local machine.
 
     ```bash
     git clone https://github.com/your-username/rocket-yew-starter-pack.git
