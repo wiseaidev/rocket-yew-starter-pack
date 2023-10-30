@@ -13,7 +13,7 @@ This full-stack template combines the power of [Yew](https://yew.rs/) on the fro
 - **Rust All The Way**: Write your web application entirely in Rust, ensuring type safety and performance.
 - **Yew Frontend**: A modern, Rust-based frontend framework for building interactive web applications.
 - **Rocket Backend**: A web framework for Rust with great flexibility and speed.
-- **CRUD Operations**: Set up Create, Read, Update, and Delete operations easily (TODO: Delete).
+- **CRUD Operations**: Set up Create, Read, Update, and Delete operations easily.
 
 ## Prerequisites
 
