@@ -1,28 +1,30 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(dead_code)]
-
 #[macro_use]
 extern crate rocket;
 
 use bincode::{deserialize, serialize};
-use maud::html;
-use maud::DOCTYPE;
-use rocket::fs::{relative, NamedFile};
-use rocket::http::ContentType;
-use rocket::response::content::RawHtml;
 use rocket::response::status;
 use rocket::serde::json::Json;
 use rocket::State;
 use serde::{Deserialize, Serialize};
-use sled::Db;
 use sled::Mode::LowSpace;
 use sled::{Config, Tree};
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use rocket_cors::{AllowedHeaders, AllowedOrigins};
+use rocket::http::Method;
+use std::path::PathBuf;
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
+    let allowed_origins = AllowedOrigins::all();
+    let allowed_methods = vec![Method::Get, Method::Post, Method::Options, Method::Put].into_iter().map(From::from).collect();
+    let cors = rocket_cors::CorsOptions {
+        allowed_origins,
+        allowed_methods: allowed_methods,
+        allowed_headers: AllowedHeaders::all(),
+        ..rocket_cors::CorsOptions::default()
+    }
+    .to_cors()
+    .expect("Error in CORS setup");
     let path = "data.db";
     let config = Config::new()
         .path(path)
@@ -32,8 +34,9 @@ async fn main() -> Result<(), rocket::Error> {
     let tree: Tree = config.open().unwrap().open_tree("tree").unwrap();
     let db_arc = Arc::new(tree);
     let routes = all_routes();
-    let rocket = rocket::build()
+    rocket::build()
         .mount("/", routes)
+        .attach(cors)
         .manage(db_arc)
         .launch()
         .await
@@ -43,13 +46,11 @@ async fn main() -> Result<(), rocket::Error> {
 
 fn all_routes() -> Vec<rocket::Route> {
     routes![
-        index,
-        static_file,
-        ugly_hack,
         create_task,
         get_task,
         get_tasks,
-        update_all_tasks
+        update_all_tasks,
+        update_task
     ]
 }
 
@@ -60,45 +61,9 @@ struct Task {
     editing: bool,
 }
 
-/// This is the entrypoint for our yew client side app.
-#[get("/")]
-async fn index(db: &State<Arc<sled::Tree>>) -> RawHtml<String> {
-    let html_content = html! {
-        (DOCTYPE)
-        html {
-            head {
-                link rel="stylesheet" href="static/styles.css" {}
-            }
-            body {}
-            // yew-generated javascript attaches to <body>
-            script src=("static/ui.js") {}
-        }
-    };
-
-    RawHtml(html_content.into_string())
-}
-
-/// Serve static assets from the "static" folder.
-#[get("/static/<path..>")]
-async fn static_file(path: PathBuf) -> Option<NamedFile> {
-    let path = Path::new(relative!("static")).join(path);
-    // if path.is_dir() {
-    //     path.push("index.html");
-    // }
-
-    NamedFile::open(path).await.ok()
-}
-
-// TODO: remove this when we figure out how to change the native Rust
-// WebAssembly's generated JavaScript code to point at "static/" prefix.
-#[get("/ui.wasm")]
-async fn ugly_hack() -> Option<NamedFile> {
-    NamedFile::open(Path::new("static/ui.wasm")).await.ok()
-}
-
 /// Create a new task. The database id will be automatically assigned.
 #[post("/task", format = "json", data = "<task>")]
-fn create_task(db: &State<Arc<sled::Tree>>, task: Json<Task>) -> status::Accepted<String> {
+async fn create_task(db: &State<Arc<sled::Tree>>, task: Json<Task>) -> status::Accepted<String> {
     println!("got a task {:?}", task);
 
     // scan through our DB to get create an incremented ID.
@@ -184,7 +149,7 @@ fn get_task(db: &State<Arc<sled::Tree>>, id: u8) -> Option<Json<Task>> {
 fn update_task(db: &State<Arc<sled::Tree>>, id: u8, task: Json<Task>) -> status::Accepted<String> {
     let key = vec![id];
     let encoded: Vec<u8> = serialize(&task.0).unwrap();
-    //db.cas(key, None, Some(encoded));
+    let _ = db.insert(key, encoded);
 
     status::Accepted(Some(format!("format")))
 }
