@@ -90,7 +90,7 @@ async fn create_task(db: &State<Arc<Tree>>, task: Json<Task>) -> status::Accepte
     // Our task is the first field (e.g., "0") on Json<Task> Rocket passes us.
     let encoded: Vec<u8> = serialize(&task.0).unwrap();
     let _ = db.insert(new_key, encoded);
-    status::Accepted(Some(format!("success")))
+    status::Accepted("success".to_string())
 }
 
 /// Return all tasks or an empty Vec, which is valid.
@@ -135,7 +135,7 @@ fn update_all_tasks(db: &State<Arc<Tree>>, tasks: Json<Vec<Task>>) -> status::Ac
         let _ = db.insert(key, encoded);
     }
 
-    status::Accepted(Some(format!("success")))
+    status::Accepted("success".to_string())
 }
 
 /// Get a task by id.
@@ -158,7 +158,7 @@ fn update_task(db: &State<Arc<Tree>>, id: u8, task: Json<Task>) -> status::Accep
     let encoded: Vec<u8> = serialize(&task.0).unwrap();
     let _ = db.insert(key, encoded);
 
-    status::Accepted(Some(format!("Task was updated successfully!")))
+    status::Accepted("Task was updated successfully!".to_string())
 }
 
 /// Update a task by id.
@@ -167,7 +167,7 @@ fn delete_task(db: &State<Arc<Tree>>, id: u8) -> status::Accepted<String> {
     let key = vec![id];
     let _ = db.remove(key);
 
-    status::Accepted(Some(format!("Task was deleted successfully!")))
+    status::Accepted("Task was deleted successfully!".to_string())
 }
 
 /// Create an instance of Rocket suitable for tests.
