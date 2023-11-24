@@ -112,6 +112,8 @@ cargo shuttle deploy --allow-dirty
 
 For deploying the Yew frontend on Netlify, a crucial step is configuring the `BASE_URL` to correctly point to the backend server that is deployed on shuttle.
 
+https://github.com/wiseaidev/rocket-yew-starter-pack/blob/7521c176d57d8a6f99b7c7e507fcbba48742809f/ui/src/main.rs#L8
+
 Following the configuration of the `BASE_URL`, the next step involves pushing the contents of the `ui/dist` folder into a GitHub repository. This ensures that the latest version of the frontend is stored and can be easily accessed for deployment purposes.
 
 To proceed, initiate the GitHub repository by executing the necessary commands, such as:
