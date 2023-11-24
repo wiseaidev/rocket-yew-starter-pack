@@ -5,6 +5,8 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
+const BASE_URL: &str = "http://127.0.0.1:8000";
+
 #[derive(Debug, Serialize, Deserialize)]
 struct Item {
     completed: bool,
@@ -67,7 +69,7 @@ fn crud_item() -> Html {
                 let json_string = serde_json::to_string(&item)
                     .expect("Error while serializing JsValue to a string");
 
-                match Request::post("http://127.0.0.1:8000/task")
+                match Request::post(&format!("{}/task", BASE_URL))
                     .header("Content-Type", "application/json")
                     .body(json_string)
                     .expect("Error while serializing the request body!")
@@ -100,7 +102,7 @@ fn crud_item() -> Html {
         Callback::from(move |_| {
             let items = items.clone();
             spawn_local(async move {
-                let fetched_items: Vec<Item> = Request::get("http://127.0.0.1:8000/tasks")
+                let fetched_items: Vec<Item> = Request::get(&format!("{}/tasks", BASE_URL))
                     .send()
                     .await
                     .unwrap()
@@ -118,7 +120,7 @@ fn crud_item() -> Html {
         let updated_item = updated_item.clone();
         spawn_local(async move {
             let item: Item =
-                Request::get(&format!("http://127.0.0.1:8000/task/{}", item_id.clone()))
+                Request::get(&format!("{}/task/{}", BASE_URL, item_id.clone()))
                     .send()
                     .await
                     .unwrap()
@@ -134,7 +136,7 @@ fn crud_item() -> Html {
                 .expect("Error while serializing JsValue to a string");
 
             // Send a PUT request to update the item's completed status
-            match Request::put(&format!("http://127.0.0.1:8000/task/{}", item_id))
+            match Request::put(&format!("{}/task/{}", BASE_URL, item_id))
                 .header("Content-Type", "application/json")
                 .body(json_string)
                 .expect("Error while serializing the request body!")
@@ -159,7 +161,7 @@ fn crud_item() -> Html {
         let item_id = id;
         spawn_local(async move {
             // Send a Delete request to update the item's completed status
-            match Request::delete(&format!("http://127.0.0.1:8000/task/{}", item_id))
+            match Request::delete(&format!("{}/task/{}", BASE_URL, item_id))
                 .header("Content-Type", "application/json")
                 .send()
                 .await

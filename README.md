@@ -56,25 +56,25 @@ Follow these steps to get your project up and running:
     ```bash
     # Install frontend dependencies
     cd ui
-    trunk build
+    trunk build --release
 
     # Install backend dependencies
     cd ../server
-    cargo build
+    cargo build --release
     ```
 
 1. **Run the Application**: Start the backend server and the frontend development server.
 
     ```bash
     # Start the backend
-    cargo run
+    cargo shuttle run
 
     # Start the frontend development server
     cd ui
-    trunk serve
+    trunk serve --port 3000
     ```
 
-1. **Access the Application**: Open your web browser and go to `http://localhost:8080` to access the application.
+1. **Access the Application**: Open your web browser and go to `http://localhost:3000` to access the application.
 
 ## Project Structure
 
@@ -89,6 +89,52 @@ Here are some common tasks you can perform with this template:
 
 - **Add API Routes**: Define your API routes in `src/main.rs`.
 - **Modify Frontend**: Customize the frontend by editing the files in `ui/src/`.
+
+## Deployment
+
+In order to deploy the Rocket backend using [shuttle](https://shuttle.rs/), the first step is to install the shuttle command-line interface (CLI). This can be achieved by executing the following command:
+
+```sh
+curl -sSfL https://www.shuttle.rs/install | bash
+```
+
+Once the shuttle CLI is successfully installed, the next step is to log in to the shuttle platform using the cargo shuttle login command. This ensures that the deployment process is associated with the correct shuttle account:
+
+```sh
+cargo shuttle login
+```
+
+After successful authentication, the deployment itself can be initiated with the following command:
+
+```sh
+cargo shuttle deploy --allow-dirty
+```
+
+For deploying the Yew frontend on Netlify, a crucial step is configuring the `BASE_URL` to correctly point to the backend server that is deployed on shuttle.
+
+Following the configuration of the `BASE_URL`, the next step involves pushing the contents of the `ui/dist` folder into a GitHub repository. This ensures that the latest version of the frontend is stored and can be easily accessed for deployment purposes.
+
+To proceed, initiate the GitHub repository by executing the necessary commands, such as:
+
+```sh
+git init
+git add dist
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin <you_repository_url.git>
+git push -u origin main
+```
+
+Replace `<you_repository_url.git>` with the actual URL of your GitHub repository.
+
+Having successfully pushed the contents to GitHub, the subsequent task is deploying the frontend on Netlify.
+
+1. Log in to [Netlify](https://www.netlify.com/) and navigate to the "Sites" tab.
+1. Click on "New site from Git" and connect to your GitHub repository.
+1. Configure the build settings, specifying the build output directory to `dist`.
+1. Deploy the site.
+
+Netlify will automatically trigger builds whenever changes are pushed to the connected GitHub repository.
 
 ## Contribution
 

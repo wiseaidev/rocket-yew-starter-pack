@@ -12,9 +12,10 @@ use sled::Mode::LowSpace;
 use sled::{Config, Tree};
 use std::path::PathBuf;
 use std::sync::Arc;
+use shuttle_rocket;
 
-#[rocket::main]
-async fn main() -> Result<(), rocket::Error> {
+#[shuttle_runtime::main]
+async fn main() -> shuttle_rocket::ShuttleRocket {
     let allowed_origins = AllowedOrigins::all();
     let allowed_methods = vec![
         Method::Get,
@@ -43,14 +44,12 @@ async fn main() -> Result<(), rocket::Error> {
     let tree: Tree = config.open().unwrap().open_tree("tree").unwrap();
     let db_arc = Arc::new(tree);
     let routes = all_routes();
-    rocket::build()
+    let rocket_app = rocket::build()
         .mount("/", routes)
         .attach(cors)
-        .manage(db_arc)
-        .launch()
-        .await
-        .expect("Launch Error");
-    Ok(())
+        .manage(db_arc);
+
+    Ok(rocket_app.into())
 }
 
 fn all_routes() -> Vec<rocket::Route> {

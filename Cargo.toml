@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "server",
+    "ui",
+]
+
+resolver = "2"
+
+[profile.release]
+lto = true
