@@ -5,9 +5,9 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
-const BASE_URL: &str = "http://127.0.0.1:8000";
+const BASE_URL: &str = "https://rocket-yew-template.shuttleapp.rs";
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct Item {
     id: u8,
     completed: bool,
@@ -16,7 +16,7 @@ struct Item {
 }
 
 #[function_component(CrudItems)]
-fn crud_item() -> Html {
+fn crud_items() -> Html {
     let input_description_ref = use_node_ref();
     let input_description_handle = use_state(String::default);
     let input_description = (*input_description_handle).clone();
@@ -55,6 +55,33 @@ fn crud_item() -> Html {
         })
     };
 
+    let items = use_state(|| vec![]);
+    let items_handle = items.clone();
+
+    let updated_item = use_state(|| Item {
+        id: 0,
+        completed: false,
+        description: "".to_string(),
+        editing: false,
+    });
+
+    let on_fetch_items = {
+        let items = items.clone();
+        Callback::from(move |_| {
+            let items = items.clone();
+            spawn_local(async move {
+                let fetched_items: Vec<Item> = Request::get(&format!("{}/tasks", BASE_URL))
+                    .send()
+                    .await
+                    .unwrap()
+                    .json()
+                    .await
+                    .unwrap();
+                items.set(fetched_items);
+            });
+        })
+    };
+
     let on_submit = {
         Callback::from(move |event: SubmitEvent| {
             event.prevent_default();
@@ -88,31 +115,6 @@ fn crud_item() -> Html {
                         println!("Network request error: {:?}", error);
                     }
                 }
-            });
-        })
-    };
-
-    let items = use_state(|| vec![]);
-    let updated_item = use_state(|| Item {
-        id: 0,
-        completed: false,
-        description: "".to_string(),
-        editing: false,
-    });
-
-    let on_fetch_items = {
-        let items = items.clone();
-        Callback::from(move |_| {
-            let items = items.clone();
-            spawn_local(async move {
-                let fetched_items: Vec<Item> = Request::get(&format!("{}/tasks", BASE_URL))
-                    .send()
-                    .await
-                    .unwrap()
-                    .json()
-                    .await
-                    .unwrap();
-                items.set(fetched_items);
             });
         })
     };
@@ -180,6 +182,25 @@ fn crud_item() -> Html {
                 }
             }
         });
+    });
+
+    use_effect_with(items.clone(), move |_| {
+        // Fetch items on page refresh
+        let items_handle = items_handle.clone();
+        spawn_local(async move {
+            let fetched_items: Vec<Item> = Request::get(&format!("{}/tasks", BASE_URL))
+                .send()
+                .await
+                .unwrap()
+                .json()
+                .await
+                .unwrap();
+            items_handle.set(fetched_items);
+        });
+
+        Box::new(move || {
+            // Cleanup logic
+        }) as Box<dyn FnOnce()>
     });
 
     html! {
