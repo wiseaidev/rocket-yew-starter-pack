@@ -276,6 +276,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "client"
+version = "0.1.0"
+dependencies = [
+ "gloo-net 0.4.0",
+ "serde",
+ "serde_json",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "yew",
+]
+
+[[package]]
 name = "comfy-table"
 version = "6.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3102,18 +3114,6 @@ dependencies = [
  "tracing",
  "tracing-core",
  "tracing-log",
-]
-
-[[package]]
-name = "trunk-template"
-version = "0.1.0"
-dependencies = [
- "gloo-net 0.4.0",
- "serde",
- "serde_json",
- "wasm-bindgen-futures",
- "web-sys",
- "yew",
 ]
 
 [[package]]
