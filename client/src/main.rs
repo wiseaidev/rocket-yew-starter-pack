@@ -9,6 +9,7 @@ const BASE_URL: &str = "http://127.0.0.1:8000";
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Item {
+    id: u8,
     completed: bool,
     description: String,
     editing: bool,
@@ -62,6 +63,7 @@ fn crud_item() -> Html {
             let input_completed = input_completed.clone();
             spawn_local(async move {
                 let item = Item {
+                    id: 0,
                     completed: input_completed,
                     description: input_description,
                     editing: false,
@@ -92,6 +94,7 @@ fn crud_item() -> Html {
 
     let items = use_state(|| vec![]);
     let updated_item = use_state(|| Item {
+        id: 0,
         completed: false,
         description: "".to_string(),
         editing: false,
@@ -127,6 +130,7 @@ fn crud_item() -> Html {
                 .await
                 .unwrap();
             updated_item.set(Item {
+                id: item.id,
                 completed: !item.completed,
                 description: item.description,
                 editing: item.editing,
@@ -185,7 +189,7 @@ fn crud_item() -> Html {
                     <h2>{"Items Created"}</h2>
                     <button onclick={on_fetch_items}>{"Refresh Items"}</button>
                     <ul>
-                        { for items.iter().enumerate().map(|(index, item)| render_item(index.try_into().unwrap(), item, on_update_item.clone(), on_delete_item.clone())) }
+                        { for items.iter().enumerate().map(|(_, item)| render_item(item.id.try_into().unwrap(), item, on_update_item.clone(), on_delete_item.clone())) }
                     </ul>
                 </div>
                 <form class="form-container" onsubmit={on_submit}>

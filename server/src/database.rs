@@ -45,10 +45,15 @@ pub fn get_tasks_db(db: &State<Arc<Tree>>) -> Json<Vec<Task>> {
         .filter_map(|item| {
             match item {
                 // Successfully retrieved an item from the database
-                Ok((_, v)) => {
-                    match from_str(&String::from_utf8_lossy(&v)) {
+                Ok((k, v)) => {
+                    match from_str::<Task>(&String::from_utf8_lossy(&v)) {
                         // Successfully deserialized the JSON into a Task
-                        Ok(decoded) => Some(decoded),
+                        Ok(mut decoded) => {
+                            // Convert the Vec<u8> key to a u8
+                            let id = k.last().cloned().unwrap_or_default();
+                            decoded.id = id;
+                            Some(decoded)
+                        }
                         // Handle deserialization error
                         Err(err) => {
                             // Print error message to stderr
@@ -101,9 +106,13 @@ pub fn get_task_db(db: &State<Arc<Tree>>, id: u8) -> Option<Json<Task>> {
     };
 
     // Deserialize the retrieved value into a Task
-    match from_str(&String::from_utf8_lossy(&val)) {
+    match from_str::<Task>(&String::from_utf8_lossy(&val)) {
         // Successfully deserialized the JSON into a Task
-        Ok(decoded) => Some(Json(decoded)),
+        Ok(mut decoded) => {
+            // Set the id field in Task using the provided id
+            decoded.id = id;
+            Some(Json(decoded))
+        }
         Err(err) => {
             // Handle error decoding Task
             eprintln!("Error decoding Task: {:?}", err);

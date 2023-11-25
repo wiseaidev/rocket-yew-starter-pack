@@ -35,7 +35,7 @@ fn test_routes() {
     // create a new task with raw json string body
     let req = c
         .post("/task")
-        .body(r#"{"completed": false, "description": "foo", "editing": false}"#)
+        .body(r#"{"id": 0, "completed": false, "description": "foo", "editing": false}"#)
         .header(ContentType::JSON);
     let resp = req.dispatch();
     assert_eq!(resp.status(), Status::Accepted);
@@ -48,6 +48,7 @@ fn test_routes() {
 
     // create another Task and let serde_json handle serialization
     let task = Task {
+        id: 1,
         description: String::from("baz"),
         completed: true,
         editing: false,
