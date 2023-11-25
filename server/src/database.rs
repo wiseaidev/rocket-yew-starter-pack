@@ -8,18 +8,28 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 pub fn create_task_db(db: &State<Arc<Tree>>, task: Json<Task>) {
-    // Get the current count of items in the database
-    let count = db.iter().filter(Result::is_ok).count();
-    let count_u8 = match count {
-        count if count <= u8::MAX as usize => count as u8,
+    // Get the maximum id in the database and increment by 1 for the new id
+    let next_id = match db
+        .iter()
+        .filter_map(|item| item.ok().map(|(key, _)| key.last().cloned()))
+        .max()
+        .map(|max_id| max_id.map(|id| id + 1).unwrap_or(0))
+    {
+        Some(id) => id,
+        None => 0, // If the database is empty, start with id 0
+    };
+
+    // Convert the next_id to u8
+    let next_id_u8 = match next_id {
+        id if id <= u8::MAX => id as u8,
         _ => {
-            eprintln!("Error: Count exceeds the maximum value for u8");
+            eprintln!("Error: Next id exceeds the maximum value for u8");
             return;
         }
     };
 
-    // Create a new key as a vector containing the count
-    let new_key = vec![count_u8];
+    // Create a new key as a vector containing the next id
+    let new_key = vec![next_id_u8];
 
     // Serialize the task into a JSON string
     let encoded = match to_string(&task.0) {
