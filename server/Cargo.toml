@@ -1,6 +1,6 @@
 [package]
 name = "server"
-version = "0.2.7"
+version = "0.2.8"
 authors = ["Coleman McFarland <coleman.mcfarland@gmail.com>", "Mahmoud Harmouch <oss@wiseai.dev>"]
 description = "Template server using the Rocket web framework."
 repository = "https://github.com/wiseaidev/rocket-yew-starter-pack"

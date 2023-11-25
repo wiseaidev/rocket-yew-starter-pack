@@ -5,7 +5,7 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
-const BASE_URL: &str = "https://rocket-yew-template.shuttleapp.rs";
+const BASE_URL: &str = "http://127.0.0.1:8000";
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct Item {
