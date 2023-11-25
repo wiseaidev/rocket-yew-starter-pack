@@ -1,13 +1,12 @@
 [package]
-name = "trunk-template"
+name = "client"
 version = "0.1.0"
 edition = "2021"
 description = "Template for starting a Yew project using Trunk"
-readme = "README.md"
-repository = "https://github.com/yewstack/yew-trunk-minimal-template"
-license = "MIT OR Apache-2.0"
+repository = "https://github.com/wiseaidev/rocket-yew-starter-pack"
 keywords = ["yew", "trunk"]
 categories = ["gui", "wasm", "web-programming"]
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]

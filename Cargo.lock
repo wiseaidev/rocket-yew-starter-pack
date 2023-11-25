@@ -2366,7 +2366,7 @@ dependencies = [
 
 [[package]]
 name = "server"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "rocket",
  "rocket_cors",

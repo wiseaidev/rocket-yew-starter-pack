@@ -55,7 +55,7 @@ Follow these steps to get your project up and running:
 
     ```bash
     # Install frontend dependencies
-    cd ui
+    cd client
     trunk build --release
 
     # Install backend dependencies
@@ -70,7 +70,7 @@ Follow these steps to get your project up and running:
     cargo shuttle run --release
 
     # Start the frontend development server
-    cd ui
+    cd client
     trunk serve --port 3000 --release
     ```
 
@@ -80,15 +80,15 @@ Follow these steps to get your project up and running:
 
 The project follows a structured layout:
 
-- `ui/`: Contains the Yew frontend code.
+- `client/`: Contains the Yew frontend code.
 - `server/`: Contains the Rocket backend code.
 
 ## Usage
 
 Here are some common tasks you can perform with this template:
 
-- **Add API Routes**: Define your API routes in `src/main.rs`.
-- **Modify Frontend**: Customize the frontend by editing the files in `ui/src/`.
+- **Add API Routes**: Define your API routes in `server/src/routes.rs`.
+- **Modify Frontend**: Customize the frontend by editing the files in `client/src/`.
 
 ## Deployment
 
@@ -112,9 +112,9 @@ cargo shuttle deploy --allow-dirty
 
 For deploying the Yew frontend on Netlify, a crucial step is configuring the `BASE_URL` to correctly point to the backend server that is deployed on shuttle.
 
-https://github.com/wiseaidev/rocket-yew-starter-pack/blob/7521c176d57d8a6f99b7c7e507fcbba48742809f/ui/src/main.rs#L8
+https://github.com/wiseaidev/rocket-yew-starter-pack/blob/7521c176d57d8a6f99b7c7e507fcbba48742809f/client/src/main.rs#L8
 
-Following the configuration of the `BASE_URL`, the next step involves pushing the contents of the `ui/dist` folder into a GitHub repository. This ensures that the latest version of the frontend is stored and can be easily accessed for deployment purposes.
+Following the configuration of the `BASE_URL`, the next step involves pushing the contents of the `client/dist` folder into a GitHub repository. This ensures that the latest version of the frontend is stored and can be easily accessed for deployment purposes.
 
 To proceed, initiate the GitHub repository by executing the necessary commands, such as:
 

@@ -28,6 +28,6 @@ jobs:
       with:
         version: 'latest'
     - name: Build
-      run: cd ui && trunk build
+      run: cd client && trunk build
     - name: Run tests
-      run: cd ui && cargo test --verbose
+      run: cd client && cargo test --verbose
