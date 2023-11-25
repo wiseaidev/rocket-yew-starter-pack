@@ -119,14 +119,13 @@ fn crud_item() -> Html {
         let item_id = id;
         let updated_item = updated_item.clone();
         spawn_local(async move {
-            let item: Item =
-                Request::get(&format!("{}/task/{}", BASE_URL, item_id.clone()))
-                    .send()
-                    .await
-                    .unwrap()
-                    .json()
-                    .await
-                    .unwrap();
+            let item: Item = Request::get(&format!("{}/task/{}", BASE_URL, item_id.clone()))
+                .send()
+                .await
+                .unwrap()
+                .json()
+                .await
+                .unwrap();
             updated_item.set(Item {
                 completed: !item.completed,
                 description: item.description,

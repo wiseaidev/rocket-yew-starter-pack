@@ -67,11 +67,11 @@ Follow these steps to get your project up and running:
 
     ```bash
     # Start the backend
-    cargo shuttle run
+    cargo shuttle run --release
 
     # Start the frontend development server
     cd ui
-    trunk serve --port 3000
+    trunk serve --port 3000 --release
     ```
 
 1. **Access the Application**: Open your web browser and go to `http://localhost:3000` to access the application.
